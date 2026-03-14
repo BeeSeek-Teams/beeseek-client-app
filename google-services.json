@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "557062219747",
+    "project_id": "beeseek-5e898",
+    "storage_bucket": "beeseek-5e898.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:557062219747:android:c3ee4800f062b61edee2d6",
+        "android_client_info": {
+          "package_name": "com.beeseek.client"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtD0mB6ZVAv8rB93VILBK4DyKV2a9nYKU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
