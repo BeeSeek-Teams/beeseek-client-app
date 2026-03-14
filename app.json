@@ -144,6 +144,12 @@
       "typedRoutes": true,
       "reactCompiler": true
     },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/24a7decf-8ba3-4d0b-ae45-ece17952bfde"
+    },
     "owner": "it_nova"
   }
 }
