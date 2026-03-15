@@ -2,6 +2,7 @@ import { AppAlert } from '@/components/AppAlert';
 import { AppText } from '@/components/AppText';
 import { Colors, Spacing, Typography } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import axios from 'axios';
 import * as Location from 'expo-location';
 import { MapPin, NavigationArrow, X } from 'phosphor-react-native';
 import React, { useRef, useState } from 'react';
@@ -70,11 +71,34 @@ export function LocationMockModal({ visible, onClose, onSelect, currentLocation 
       if (response && response.length > 0) {
         const item = response[0];
         const formattedAddress = `${item.name || ''} ${item.street || ''}, ${item.city || item.region || ''}`.trim().replace(/^ ,/, '');
-        onSelect(formattedAddress || 'Unknown Location', { latitude, longitude });
-        onClose();
+        if (formattedAddress) {
+          onSelect(formattedAddress, { latitude, longitude });
+          onClose();
+          return;
+        }
       }
+
+      // Fallback to Google Geocoding
+      if (GOOGLE_PLACES_API_KEY) {
+        const googleResponse = await axios.get(
+          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_PLACES_API_KEY}`,
+          { timeout: 10000 }
+        );
+        if (googleResponse.data.status === 'OK' && googleResponse.data.results?.length > 0) {
+          let locString = googleResponse.data.results[0].formatted_address;
+          const parts = locString.split(',');
+          if (parts.length > 2) locString = parts.slice(0, 2).join(',').trim();
+          onSelect(locString, { latitude, longitude });
+          onClose();
+          return;
+        }
+      }
+
+      // Last resort: use coordinates as label
+      onSelect(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`, { latitude, longitude });
+      onClose();
     } catch (error) {
-       console.error(error);
+       console.error('[Location] Modal geocoding failed:', error);
     } finally {
        setLoading(false);
     }

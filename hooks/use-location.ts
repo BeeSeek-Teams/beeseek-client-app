@@ -74,6 +74,7 @@ export const useLocation = () => {
   }, [setActualLocation]);
 
   const getAddressFromCoords = async (latitude: number, longitude: number) => {
+    // 1. Try native reverse geocoding first
     try {
       console.log('[Location] Attempting native reverse geocoding...');
       const response = await Location.reverseGeocodeAsync({ latitude, longitude });
@@ -85,34 +86,46 @@ export const useLocation = () => {
           return formattedAddress;
         }
       }
+      console.warn('[Location] Native geocoding returned empty results');
     } catch (error: any) {
       console.warn('[Location] Native reverse geocoding failed:', error.message);
-      
-      // Fallback to Google Geocoding if native fails (common when rate limited)
-      if (GOOGLE_PLACES_API_KEY) {
-        console.log('[Location] Attempting Google Geocoding fallback...');
-        try {
-          const googleResponse = await axios.get(
-            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_PLACES_API_KEY}`
-          );
-          
-          if (googleResponse.data.results && googleResponse.data.results.length > 0) {
-            let locString = googleResponse.data.results[0].formatted_address;
-            
-            // Clean up the string to be more compact for the header
-            const parts = locString.split(',');
-            if (parts.length > 2) {
-                locString = parts.slice(0, 2).join(',').trim();
-            }
-            
-            console.log('[Location] Google fallback success:', locString);
-            return locString;
+    }
+
+    // 2. Fallback to Google Geocoding (runs whenever native fails OR returns empty)
+    if (GOOGLE_PLACES_API_KEY) {
+      console.log('[Location] Attempting Google Geocoding fallback...');
+      try {
+        const googleResponse = await axios.get(
+          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_PLACES_API_KEY}`,
+          { timeout: 10000 }
+        );
+
+        const { status, results, error_message } = googleResponse.data;
+        console.log('[Location] Google Geocoding status:', status, error_message || '');
+
+        if (status === 'OK' && results && results.length > 0) {
+          let locString = results[0].formatted_address;
+
+          // Clean up the string to be more compact for the header
+          const parts = locString.split(',');
+          if (parts.length > 2) {
+            locString = parts.slice(0, 2).join(',').trim();
           }
-        } catch (googleError: any) {
-          console.error('[Location] Google fallback also failed:', googleError.message);
+
+          console.log('[Location] Google fallback success:', locString);
+          return locString;
         }
+      } catch (googleError: any) {
+        console.error('[Location] Google fallback also failed:', googleError.message);
       }
     }
+
+    // 3. Keep last known address instead of showing "Unknown Location"
+    if (lastAddress && lastAddress !== 'Unknown Location') {
+      console.log('[Location] Using last known address:', lastAddress);
+      return lastAddress;
+    }
+
     return 'Unknown Location';
   };
 
