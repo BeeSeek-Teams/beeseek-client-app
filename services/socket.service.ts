@@ -31,7 +31,8 @@ class SocketService {
       upgrade: true,
       reconnection: true,
       reconnectionDelay: 2000,
-      reconnectionAttempts: 10,
+      reconnectionDelayMax: 30000,
+      reconnectionAttempts: Infinity,
       timeout: 60000,
       forceNew: true,
     });

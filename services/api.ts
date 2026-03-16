@@ -22,8 +22,8 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 const shouldRetry = (error: any, retryCount: number): boolean => {
   if (retryCount >= MAX_RETRIES) return false;
   
-  // Retry on timeout or network errors
-  if (error.code === 'ECONNABORTED' || error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+  // Retry on timeout or network errors (including ERR_NETWORK from React Native)
+  if (error.code === 'ECONNABORTED' || error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
     return true;
   }
   
@@ -126,7 +126,7 @@ api.interceptors.response.use(
     }
     
     // Retry logic for network failures on auth endpoints
-    const isNetworkError = error.code === 'ECONNABORTED' || error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' || error.message?.includes('timeout');
+    const isNetworkError = error.code === 'ECONNABORTED' || error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK' || error.message?.includes('timeout') || error.message === 'Network Error';
     if (isNetworkError || error.response?.status >= 500) {
       if (shouldRetry(error, originalRequest._retryCount)) {
         originalRequest._retryCount++;

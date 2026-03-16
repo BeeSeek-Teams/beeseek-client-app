@@ -59,15 +59,48 @@ interface AuthState {
 }
 
 // Custom storage object to use Expo SecureStore
+// SecureStore has a 2048-byte limit per item on Android.
+// Chunk large values across multiple keys to avoid the limit.
+const CHUNK_SIZE = 1800;
+
 const secureStorage = {
   getItem: async (name: string): Promise<string | null> => {
-    return await SecureStore.getItemAsync(name);
+    const countStr = await SecureStore.getItemAsync(`${name}_count`);
+    if (!countStr) {
+      // Legacy single-key read (migration path)
+      return await SecureStore.getItemAsync(name);
+    }
+    const count = parseInt(countStr, 10);
+    let result = '';
+    for (let i = 0; i < count; i++) {
+      const chunk = await SecureStore.getItemAsync(`${name}_${i}`);
+      if (chunk === null) return null;
+      result += chunk;
+    }
+    return result;
   },
   setItem: async (name: string, value: string): Promise<void> => {
-    await SecureStore.setItemAsync(name, value);
+    const chunks: string[] = [];
+    for (let i = 0; i < value.length; i += CHUNK_SIZE) {
+      chunks.push(value.slice(i, i + CHUNK_SIZE));
+    }
+    await SecureStore.setItemAsync(`${name}_count`, String(chunks.length));
+    for (let i = 0; i < chunks.length; i++) {
+      await SecureStore.setItemAsync(`${name}_${i}`, chunks[i]);
+    }
+    // Clean up legacy single key
+    try { await SecureStore.deleteItemAsync(name); } catch {}
   },
   removeItem: async (name: string): Promise<void> => {
-    await SecureStore.deleteItemAsync(name);
+    const countStr = await SecureStore.getItemAsync(`${name}_count`);
+    if (countStr) {
+      const count = parseInt(countStr, 10);
+      for (let i = 0; i < count; i++) {
+        try { await SecureStore.deleteItemAsync(`${name}_${i}`); } catch {}
+      }
+      await SecureStore.deleteItemAsync(`${name}_count`);
+    }
+    try { await SecureStore.deleteItemAsync(name); } catch {}
   },
 };
 
