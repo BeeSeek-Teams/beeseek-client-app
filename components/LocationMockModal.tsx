@@ -66,39 +66,51 @@ export function LocationMockModal({ visible, onClose, onSelect, currentLocation 
 
       const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       const { latitude, longitude } = position.coords;
-      
-      const response = await Location.reverseGeocodeAsync({ latitude, longitude });
-      if (response && response.length > 0) {
-        const item = response[0];
-        const formattedAddress = `${item.name || ''} ${item.street || ''}, ${item.city || item.region || ''}`.trim().replace(/^ ,/, '');
-        if (formattedAddress) {
-          onSelect(formattedAddress, { latitude, longitude });
-          onClose();
-          return;
+
+      // 1. Try native reverse geocoding
+      let resolved = false;
+      try {
+        const response = await Location.reverseGeocodeAsync({ latitude, longitude });
+        if (response && response.length > 0) {
+          const item = response[0];
+          const formattedAddress = `${item.name || ''} ${item.street || ''}, ${item.city || item.region || ''}`.trim().replace(/^ ,/, '');
+          if (formattedAddress) {
+            onSelect(formattedAddress, { latitude, longitude });
+            onClose();
+            resolved = true;
+          }
+        }
+      } catch (nativeError: any) {
+        console.warn('[Location] Native geocoding failed:', nativeError.message);
+      }
+
+      // 2. Fallback to Google Geocoding
+      if (!resolved && GOOGLE_PLACES_API_KEY) {
+        try {
+          const googleResponse = await axios.get(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_PLACES_API_KEY}`,
+            { timeout: 10000 }
+          );
+          if (googleResponse.data.status === 'OK' && googleResponse.data.results?.length > 0) {
+            let locString = googleResponse.data.results[0].formatted_address;
+            const parts = locString.split(',');
+            if (parts.length > 2) locString = parts.slice(0, 2).join(',').trim();
+            onSelect(locString, { latitude, longitude });
+            onClose();
+            resolved = true;
+          }
+        } catch (googleError: any) {
+          console.warn('[Location] Google fallback failed:', googleError.message);
         }
       }
 
-      // Fallback to Google Geocoding
-      if (GOOGLE_PLACES_API_KEY) {
-        const googleResponse = await axios.get(
-          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_PLACES_API_KEY}`,
-          { timeout: 10000 }
-        );
-        if (googleResponse.data.status === 'OK' && googleResponse.data.results?.length > 0) {
-          let locString = googleResponse.data.results[0].formatted_address;
-          const parts = locString.split(',');
-          if (parts.length > 2) locString = parts.slice(0, 2).join(',').trim();
-          onSelect(locString, { latitude, longitude });
-          onClose();
-          return;
-        }
+      // 3. Last resort: use coordinates as label
+      if (!resolved) {
+        onSelect(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`, { latitude, longitude });
+        onClose();
       }
-
-      // Last resort: use coordinates as label
-      onSelect(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`, { latitude, longitude });
-      onClose();
     } catch (error) {
-       console.error('[Location] Modal geocoding failed:', error);
+       console.error('[Location] Modal location failed:', error);
     } finally {
        setLoading(false);
     }
