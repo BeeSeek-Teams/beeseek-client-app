@@ -1,9 +1,10 @@
 import { Colors, Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { securityService } from '@/services/security.service';
 import * as Haptics from 'expo-haptics';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
-import { Backspace, CheckCircle, Fingerprint, X } from 'phosphor-react-native';
+import { Backspace, CheckCircle, Fingerprint, ShieldPlus, X } from 'phosphor-react-native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Modal, Platform, StyleSheet, View } from 'react-native';
 import Ripple from 'react-native-material-ripple';
@@ -16,6 +17,8 @@ interface SecurityPinModalProps {
   onSuccess: (pin?: string) => void;
   title?: string;
   useBiometrics?: boolean;
+  /** When provided, enables "no PIN" detection. If user has no PIN, shows a CTA instead of the numpad. */
+  onSetPin?: () => void;
 }
 
 export const SecurityPinModal = ({ 
@@ -23,21 +26,44 @@ export const SecurityPinModal = ({
   onClose, 
   onSuccess, 
   title = 'Enter Transaction PIN',
-  useBiometrics = false 
+  useBiometrics = false,
+  onSetPin,
 }: SecurityPinModalProps) => {
   const colorScheme = (useColorScheme() ?? 'light') as 'light' | 'dark';
   const colors = Colors[colorScheme];
   const insets = useSafeAreaInsets();
   const [pin, setPin] = useState('');
   const [biometricSuccess, setBiometricSuccess] = useState(false);
+  const [noPinSet, setNoPinSet] = useState(false);
+  const [checkingPin, setCheckingPin] = useState(false);
 
   // Reset state when modal opens/closes
   useEffect(() => {
     if (visible) {
       setPin('');
       setBiometricSuccess(false);
-      if (useBiometrics) {
-        handleBiometrics();
+      setNoPinSet(false);
+
+      // If onSetPin is provided, check if user has a PIN before showing numpad
+      if (onSetPin) {
+        setCheckingPin(true);
+        securityService.getStatus()
+          .then((data) => {
+            if (!data.hasPin) {
+              setNoPinSet(true);
+            } else if (useBiometrics) {
+              handleBiometrics();
+            }
+          })
+          .catch(() => {
+            // On error, proceed normally — let the backend reject if no PIN
+            if (useBiometrics) handleBiometrics();
+          })
+          .finally(() => setCheckingPin(false));
+      } else {
+        if (useBiometrics) {
+          handleBiometrics();
+        }
       }
     }
   }, [visible]);
@@ -142,7 +168,35 @@ export const SecurityPinModal = ({
             <View style={{ width: 40 }} />
           </View>
 
-          {biometricSuccess ? (
+          {checkingPin ? (
+            <View style={styles.successContainer}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <AppText size="sm" color={colors.textSecondary} style={{ marginTop: Spacing.md }}>Checking PIN status...</AppText>
+            </View>
+          ) : noPinSet ? (
+            <View style={styles.successContainer}>
+              <View style={[styles.noPinIcon, { backgroundColor: colors.primary + '15' }]}>
+                <ShieldPlus size={56} color={colors.primary} weight="duotone" />
+              </View>
+              <AppText variant="bold" size="lg" style={{ marginTop: Spacing.lg, textAlign: 'center' }}>
+                No Transaction PIN Set
+              </AppText>
+              <AppText size="sm" color={colors.textSecondary} style={{ marginTop: Spacing.sm, textAlign: 'center', paddingHorizontal: Spacing.xl }}>
+                You need a 4-digit transaction PIN to make payments. It only takes a moment to set up.
+              </AppText>
+              <Ripple
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  onSetPin?.();
+                }}
+                style={[styles.setPinBtn, { backgroundColor: colors.primary }]}
+                rippleColor="#fff"
+              >
+                <ShieldPlus size={20} color="#fff" weight="bold" style={{ marginRight: 8 }} />
+                <AppText variant="bold" size="md" color="#fff">Set Transaction PIN</AppText>
+              </Ripple>
+            </View>
+          ) : biometricSuccess ? (
             <View style={styles.successContainer}>
               <CheckCircle size={64} color={colors.success || colors.primary} weight="fill" />
               <AppText variant="bold" size="lg" style={{ marginTop: Spacing.md }}>Authenticated</AppText>
@@ -253,5 +307,21 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-  }
+  },
+  noPinIcon: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  setPinBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 14,
+    marginTop: Spacing.xl,
+  },
 });

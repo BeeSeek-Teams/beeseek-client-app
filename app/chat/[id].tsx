@@ -818,6 +818,10 @@ export default function ChatDetailScreen() {
         onSuccess={handleFinalPayment}
         title="Enter Transaction PIN to Pay"
         useBiometrics={user?.useBiometrics}
+        onSetPin={() => {
+          setIsPinModalVisible(false);
+          router.push('/security-settings');
+        }}
       />
 
       <AppLoader visible={isActionLoading} message="Processing Payment..." />
