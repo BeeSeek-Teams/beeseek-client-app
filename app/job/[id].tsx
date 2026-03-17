@@ -396,9 +396,12 @@ export default function JobDetailsScreen() {
   };
 
   const renderActionButtons = () => {
-      if (jobData.status !== 'ACTIVE') {
+      // Treat as completed if status says so OR if completedAt is set (payment already released)
+      const isCompleted = jobData.status === 'COMPLETED' || !!jobData.completedAt;
+
+      if (isCompleted || jobData.status !== 'ACTIVE') {
           const clientReview = jobData.reviews?.find((r: any) => r.reviewerId === jobData.contract.clientId);
-          if (jobData.status === 'COMPLETED' && !clientReview) {
+          if (isCompleted && !clientReview) {
               return (
                   <View style={styles.actionContainer}>
                       <AppButton 
@@ -494,7 +497,7 @@ export default function JobDetailsScreen() {
       
       <ScrollView contentContainerStyle={{ paddingBottom: 160 }}>
           {/* Status Banner */}
-          {jobData.status === 'COMPLETED' && (
+          {(jobData.status === 'COMPLETED' || !!jobData.completedAt) && (
               <View style={[styles.statusBanner, { backgroundColor: colors.success + '15' }]}>
                   <Check size={18} color={colors.success} weight="bold" />
                   <AppText variant="bold" color={colors.success} style={{ marginLeft: 8 }}>Job Completed Successfully</AppText>

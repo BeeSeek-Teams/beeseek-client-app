@@ -8,6 +8,7 @@ import { LocationPermissionModal } from '@/components/LocationPermissionModal';
 import { SOSModal } from '@/components/SOSModal';
 import { Colors, Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useJobSocket } from '@/hooks/use-job-socket';
 import { getDistance, useLocation } from '@/hooks/use-location';
 import { analyticsService } from '@/services/analytics.service';
 import api from '@/services/api';
@@ -68,6 +69,7 @@ export default function HomeScreen() {
   const [upcomingHires, setUpcomingHires] = useState<any[]>([]);
   const { unreadCount, fetchUnreadCount } = useNotificationStore();
   const [showSpent, setShowSpent] = useState(false);
+  const { onJobUpdate } = useJobSocket();
 
   const fetchProfile = async () => {
     const { accessToken, _hasHydrated } = useAuthStore.getState();
@@ -131,6 +133,7 @@ export default function HomeScreen() {
       // Logic for active/upcoming - strictly from Job table
       const active = jobs.find((j: any) => 
         j.status === 'ACTIVE' && 
+        !j.completedAt &&
         (j.currentStep !== 'ALL_SET' || dayjs(j.contract.workDate).isSame(now, 'day'))
       );
       
@@ -156,6 +159,7 @@ export default function HomeScreen() {
       const upcoming = jobs
         .filter((j: any) => 
             j.status === 'ACTIVE' && 
+            !j.completedAt &&
             j.id !== active?.id &&
             dayjs(j.contract.workDate).isAfter(now, 'day')
         )
@@ -218,6 +222,14 @@ export default function HomeScreen() {
       }
     }, [_hasHydrated, accessToken])
   );
+
+  // Real-time: refresh home when any job status changes (e.g., payment released)
+  useEffect(() => {
+    const unsubscribe = onJobUpdate(() => {
+      fetchHomeData();
+    });
+    return () => unsubscribe();
+  }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
