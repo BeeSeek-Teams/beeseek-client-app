@@ -1,3 +1,4 @@
+import { AccountLinkingModal } from '@/components/AccountLinkingModal';
 import { AppAlert } from '@/components/AppAlert';
 import { AppButton } from '@/components/AppButton';
 import { AppInput } from '@/components/AppInput';
@@ -17,9 +18,14 @@ import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Touch
 import { NINFormValues, ninSchema } from '../utils/validation';
 
 export default function VerifyNINScreen() {
-  const { updateUser } = useAuthStore();
+  const { user, updateUser } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
+  const [linkingModalVisible, setLinkingModalVisible] = useState(false);
+  const [linkedAccountInfo, setLinkedAccountInfo] = useState<{
+    name: string;
+    role: 'CLIENT' | 'AGENT';
+  } | null>(null);
   const [alertConfig, setAlertConfig] = useState<{
     title: string;
     message: string;
@@ -50,23 +56,48 @@ export default function VerifyNINScreen() {
   const onSubmit = async (data: NINFormValues) => {
     setLoading(true);
     try {
-      await authService.verifyNIN(data.nin);
+      const response = await authService.verifyNIN(data.nin);
 
       // Update local state to reflect verification status
       updateUser({ ninStatus: 'PENDING' });
 
-      showAlert(
-        'Verification Submitted', 
-        'Your NIN has been received and is now under review by our support team. You will be notified once verified.', 
-        'success',
-        () => {
-          if (router.canGoBack()) {
-            router.back();
-          } else {
-            router.replace('/(tabs)');
+      // Check if accounts were linked
+      if (response.linkedAccountDetails) {
+        setLinkedAccountInfo({
+          name: response.linkedAccountDetails.name,
+          role: response.linkedAccountDetails.role,
+        });
+        setLinkingModalVisible(true);
+        
+        // Handle completion after modal closes
+        setTimeout(() => {
+          showAlert(
+            'Verification Submitted', 
+            'Your NIN has been received and is now under review by our support team. You will be notified once verified.', 
+            'success',
+            () => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace('/(tabs)');
+              }
+            }
+          );
+        }, 3500); // Wait for modal animation to complete
+      } else {
+        showAlert(
+          'Verification Submitted', 
+          'Your NIN has been received and is now under review by our support team. You will be notified once verified.', 
+          'success',
+          () => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace('/(tabs)');
+            }
           }
-        }
-      );
+        );
+      }
     } catch (error: any) {
       showAlert('Verification Failed', error.response?.data?.message || 'Could not verify NIN');
     } finally {
@@ -149,6 +180,14 @@ export default function VerifyNINScreen() {
         message={alertConfig.message}
         onConfirm={alertConfig.onConfirm || (() => setAlertVisible(false))}
         type={alertConfig.type}
+      />
+
+      <AccountLinkingModal
+        visible={linkingModalVisible}
+        linkedAccountName={linkedAccountInfo?.name}
+        currentRole={user?.role || 'CLIENT'}
+        linkedRole={linkedAccountInfo?.role || 'AGENT'}
+        onDismiss={() => setLinkingModalVisible(false)}
       />
     </AppScreen>
   );
