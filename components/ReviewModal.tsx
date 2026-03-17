@@ -33,7 +33,7 @@ export const ReviewModal = ({ visible, onClose, onSubmit, title = "Rate your Exp
   };
 
   return (
-    <AppModal visible={visible} onClose={onClose} title={title}>
+    <AppModal visible={visible} onClose={onClose} title={title} position="center">
       <View style={styles.container}>
         <AppText align="center" color={colors.textSecondary} style={{ marginBottom: Spacing.xl }}>
            How was your interaction with the professional? Your feedback helps keep the community safe and reliable.

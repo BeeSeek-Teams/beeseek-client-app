@@ -208,7 +208,7 @@ export default function TransactionsScreen() {
                           />
                       </View>
                       <AppText variant="bold" size="xl" style={styles.modalAmount}>
-                          {(selectedTx.type === 'CREDIT' || selectedTx.type === 'REVENUE') ? '+' : (selectedTx.type === 'LOCKED' ? '' : '-')}₦{selectedTx.amount.toLocaleString()}
+                          {(selectedTx.type === 'CREDIT' || selectedTx.type === 'REVENUE') ? '+' : (selectedTx.type === 'LOCKED' ? '' : '-')}₦{(selectedTx.amount / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </AppText>
                       <View style={[
                           styles.statusBadge,

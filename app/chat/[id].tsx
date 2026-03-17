@@ -25,6 +25,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useChatStore } from '@/store/useChatStore';
 import { getOptimizedImageUrl } from '@/utils/cloudinary';
 import { Audio } from 'expo-av';
+import * as Crypto from 'expo-crypto';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -61,6 +62,7 @@ export default function ChatDetailScreen() {
   const [selectedBee, setSelectedBee] = useState<any>(null);
   const [isPinModalVisible, setIsPinModalVisible] = useState(false);
   const [contractToPay, setContractToPay] = useState<any>(null);
+  const [paymentIdempotencyKey, setPaymentIdempotencyKey] = useState<string | null>(null);
   const [isCheckoutVisible, setIsCheckoutVisible] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertConfig, setAlertConfig] = useState({ title: '', message: '', type: 'info' as any });
@@ -431,9 +433,16 @@ export default function ChatDetailScreen() {
     }
     setIsPinModalVisible(false);
     
+    // Generate idempotency key if we don't have one yet (first attempt)
+    // On retry after failure, we reuse the same key to prevent double-charge
+    const idemKey = paymentIdempotencyKey || Crypto.randomUUID();
+    if (!paymentIdempotencyKey) {
+      setPaymentIdempotencyKey(idemKey);
+    }
+    
     try {
       setIsActionLoading(true);
-      const result = await contractService.pay(contractToPay.id, id as string, pin);
+      const result = await contractService.pay(contractToPay.id, id as string, pin, idemKey);
       
       // Refresh user profile to get updated balance
       const updatedProfile = await authService.getProfile();
@@ -447,8 +456,11 @@ export default function ChatDetailScreen() {
         router.push(`/job/${jobId}`);
       }
       
+      // Clear both contract and idempotency key on success
       setContractToPay(null);
+      setPaymentIdempotencyKey(null);
     } catch (error: any) {
+      // Keep paymentIdempotencyKey so retry uses the same key
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showAlert('Payment Failed', error?.response?.data?.message || 'Something went wrong with the transaction. Please check your connection and try again.', 'error');
     } finally {
@@ -681,6 +693,7 @@ export default function ChatDetailScreen() {
                         isSender={isSender} 
                         onPay={(contract) => {
                           setContractToPay(contract);
+                          setPaymentIdempotencyKey(Crypto.randomUUID());
                           setIsCheckoutVisible(true);
                         }}
                       />

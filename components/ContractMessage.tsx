@@ -293,19 +293,18 @@ export const ContractMessage = ({ message, isSender, onPay, onComplete, onCancel
     <View style={[
         styles.container, 
         { 
-            backgroundColor: isTerminated ? colors.error + '05' : (isAgreementActive ? colors.primary + '05' : colors.background), 
-            borderColor: isTerminated ? colors.error : (isAgreementActive ? colors.primary : colors.border),
-            borderBottomRightRadius: isSender ? 4 : 20,
-            borderBottomLeftRadius: !isSender ? 4 : 20,
-            borderWidth: isAgreementActive ? 1.5 : 1,
+            backgroundColor: isTerminated ? colors.error + '08' : colors.surface, 
+            borderRadius: 12,
+            alignSelf: isSender ? 'flex-end' : 'flex-start',
+            borderColor: colors.border,
         }
     ]}>
-      <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: isTerminated ? colors.error + '10' : (isAgreementActive ? colors.primary + '10' : colors.primary + '08') }]}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
               <View style={[styles.iconWrapper, { backgroundColor: isTerminated ? colors.error : colors.primary }]}>
-                {isTerminated ? <WarningCircle size={16} color="#fff" weight="bold" /> : (isAgreementActive ? <ShieldCheck size={16} color="#fff" weight="bold" /> : <Briefcase size={16} color="#fff" weight="bold" />)}
+                {isTerminated ? <WarningCircle size={14} color="#fff" weight="bold" /> : (isAgreementActive ? <ShieldCheck size={14} color="#fff" weight="bold" /> : <Briefcase size={14} color="#fff" weight="bold" />)}
               </View>
-              <AppText variant="bold" style={{ marginLeft: 10 }}>
+              <AppText variant="bold" size="sm" style={{ marginLeft: 8, flex: 1 }} numberOfLines={1}>
                   {isTerminated ? 'Terminated Agreement' : (isAgreementActive ? 'Service Agreement' : isRequest ? 'Hire Request' : 'Job Quote')}
               </AppText>
           </View>
@@ -314,9 +313,9 @@ export const ContractMessage = ({ message, isSender, onPay, onComplete, onCancel
 
       <View style={styles.body}>
           {isRequest && !isAgreementActive ? (
-              <>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                    <AppText variant="bold" size="lg" style={{ flex: 1 }}>{contract.bee?.title || 'Requested Service'}</AppText>
+              <View style={{ gap: 12 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <AppText variant="bold" size="md" style={{ flex: 1 }} numberOfLines={1}>{contract.bee?.title || 'Requested Service'}</AppText>
                     {contract.type === 'INSPECTION' ? (
                         <View style={[styles.typeBadge, { backgroundColor: '#F59E0B' }]}>
                             <AppText size="xs" color="#fff" variant="bold">INSPECTION</AppText>
@@ -328,40 +327,34 @@ export const ContractMessage = ({ message, isSender, onPay, onComplete, onCancel
                     )}
                   </View>
                   
-                  <View style={[styles.detailsBox, { backgroundColor: colors.surface }]}>
-                    <AppText size="sm" color={colors.text} style={{ lineHeight: 20 }}>
+                  <View style={[styles.detailsBox, { backgroundColor: colors.background }]}>
+                    <AppText size="xs" color={colors.textSecondary} style={{ lineHeight: 18 }} numberOfLines={3}>
                         {contract.details}
                     </AppText>
                   </View>
 
                   <View style={styles.grid}>
                     <View style={styles.gridItem}>
-                      <Calendar size={18} color={colors.primary} />
-                      <View style={{ marginLeft: 10 }}>
-                        <AppText size="xs" color={colors.textSecondary}>Date</AppText>
-                        <AppText size="sm" variant="bold">{formatWorkDate(contract.workDate)}</AppText>
-                      </View>
+                      <Calendar size={14} color={colors.primary} />
+                      <AppText size="xs" variant="bold" style={{ marginLeft: 6 }}>{formatWorkDate(contract.workDate)}</AppText>
                     </View>
                     <View style={styles.gridItem}>
-                      <Clock size={16} color={colors.primary} />
-                      <View style={{ marginLeft: 10 }}>
-                        <AppText size="xs" color={colors.textSecondary}>Time</AppText>
-                        <AppText size="sm" variant="bold">{formatTime12h(contract.startTime)}</AppText>
-                      </View>
+                      <Clock size={14} color={colors.primary} />
+                      <AppText size="xs" variant="bold" style={{ marginLeft: 6 }}>{formatTime12h(contract.startTime)}</AppText>
                     </View>
                   </View>
 
-                  <View style={[styles.locationRow, { borderTopColor: colors.border }]}>
-                      <MapPin size={18} color={colors.primary} />
-                      <AppText size="sm" style={{ marginLeft: 8, flex: 1 }} numberOfLines={1}>{contract.address}</AppText>
+                  <View style={styles.locationRow}>
+                      <MapPin size={14} color={colors.primary} />
+                      <AppText size="xs" color={colors.textSecondary} style={{ marginLeft: 6, flex: 1 }} numberOfLines={1}>{contract.address}</AppText>
                   </View>
-              </>
+              </View>
           ) : (
-              <>
+              <View style={{ gap: 8 }}>
                   {isAgreementActive && (
-                    <View style={{ marginBottom: 16 }}>
-                      <AppText variant="bold" size="lg" color={isTerminated ? colors.textSecondary : colors.text}>{contract.bee?.title || 'Professional Service'}</AppText>
-                      <AppText size="xs" color={colors.textSecondary} style={{ marginTop: 2 }}>
+                    <View style={{ marginBottom: 4 }}>
+                      <AppText variant="bold" size="md" color={isTerminated ? colors.textSecondary : colors.text} numberOfLines={1}>{contract.bee?.title || 'Professional Service'}</AppText>
+                      <AppText size="xs" color={colors.textSecondary}>
                         {isTerminated ? 'Contract was legally dissolved' : 'Secure Escrow Agreement'}
                       </AppText>
                     </View>
@@ -369,11 +362,11 @@ export const ContractMessage = ({ message, isSender, onPay, onComplete, onCancel
 
                   {isTerminated && (
                     <View style={[styles.cancellationBanner, { backgroundColor: colors.error + '05', borderColor: colors.error }]}>
-                        <WarningCircle size={20} color={colors.error} weight="fill" />
-                        <View style={{ flex: 1, marginLeft: 10 }}>
-                            <AppText variant="bold" size="sm" color={colors.error}>Termination recorded in ledger</AppText>
+                        <WarningCircle size={16} color={colors.error} weight="fill" />
+                        <View style={{ flex: 1, marginLeft: 8 }}>
+                            <AppText variant="bold" size="xs" color={colors.error}>Termination recorded in ledger</AppText>
                              {contract.job?.cancellationAudit && (
-                                <AppText size="xs" color={colors.textSecondary} style={{ marginTop: 2 }}>
+                                <AppText size="xs" color={colors.textSecondary}>
                                     Category: {contract.job.cancellationAudit.category}
                                 </AppText>
                             )}
@@ -381,37 +374,25 @@ export const ContractMessage = ({ message, isSender, onPay, onComplete, onCancel
                     </View>
                   )}
                   
-                  <View style={styles.quoteRow}>
-                      <AppText size="sm" color={colors.textSecondary}>Workmanship</AppText>
-                      <AppText variant="bold">₦{(Number(contract.workmanshipCost || 0) / 100).toLocaleString()}</AppText>
+                  <View style={styles.quoteMiniRow}>
+                      <AppText size="xs" color={colors.textSecondary}>Workmanship + Fare</AppText>
+                      <AppText variant="bold" size="xs">₦{((Number(contract.workmanshipCost || 0) + Number(contract.transportFare || 0)) / 100).toLocaleString()}</AppText>
                   </View>
-                  <View style={styles.quoteRow}>
-                      <AppText size="sm" color={colors.textSecondary}>Transport Fare</AppText>
-                      <AppText variant="bold">₦{(Number(contract.transportFare || 0) / 100).toLocaleString()}</AppText>
-                  </View>
+
                   {contract.materials?.length > 0 && (
-                      <View style={[styles.materialsList, { backgroundColor: colors.surface }]}>
-                          <AppText size="xs" variant="bold" color={colors.textSecondary} style={{ marginBottom: 6, textTransform: 'uppercase' }}>Materials Breakdown</AppText>
-                          {contract.materials.map((m: any, i: number) => (
-                              <View key={i} style={styles.materialItem}>
-                                  <AppText size="sm">{m.item}</AppText>
-                                  <AppText size="sm" variant="bold">₦{(Number(m.cost || 0) / 100).toLocaleString()}</AppText>
-                              </View>
-                          ))}
+                      <View style={[styles.materialsListMini, { backgroundColor: colors.background }]}>
+                          <AppText size="xs" variant="bold" color={colors.textSecondary} style={{ marginBottom: 4 }}>Materials ({contract.materials.length})</AppText>
+                          <AppText size="xs" color={colors.textSecondary} numberOfLines={1}>
+                            {contract.materials.map((m: any) => m.item).join(', ')}
+                          </AppText>
                       </View>
                   )}
-                  <View style={[styles.quoteRow, { marginTop: 8 }]}>
-                      <AppText size="sm" color={colors.textSecondary}>Service Fee</AppText>
-                      <AppText variant="bold">₦{(Number(contract.serviceFee || 0) / 100).toLocaleString()}</AppText>
+                  
+                  <View style={[styles.totalRowMini, { borderTopColor: colors.border }]}>
+                      <AppText variant="bold" size="xs">Total Cost</AppText>
+                      <AppText variant="bold" size="md" color={colors.primary}>₦{totalClientCostNaira.toLocaleString()}</AppText>
                   </View>
-                  <View style={[styles.totalRow, { borderTopColor: colors.border }]}>
-                      <View>
-                        <AppText variant="bold" size="sm">Total Payment</AppText>
-                        <AppText size="xs" color={colors.textSecondary}>Inclusive of all fees</AppText>
-                      </View>
-                      <AppText variant="bold" size="xl" color={colors.primary}>₦{totalClientCostNaira.toLocaleString()}</AppText>
-                  </View>
-              </>
+              </View>
           )}
       </View>
 
@@ -425,20 +406,17 @@ export const ContractMessage = ({ message, isSender, onPay, onComplete, onCancel
       </AppModal>
 
       {!isSender && isQuote && (
-          <View style={[styles.footer, { borderTopColor: colors.border, justifyContent: 'center' }]}>
+          <View style={[styles.footer, { borderTopColor: colors.border }]}>
               {isExpired ? (
-                <View style={{ width: '100%', alignItems: 'center', gap: 8 }}>
-                  <WarningCircle size={24} color={colors.error} weight="fill" />
+                <View style={{ width: '100%', alignItems: 'center', gap: 4 }}>
+                  <WarningCircle size={20} color={colors.error} weight="fill" />
                   <AppText size="xs" color={colors.error} variant="bold">Quote Expired</AppText>
-                  <AppText size="xs" color={colors.textSecondary}>This offer is no longer valid due to time constraints.</AppText>
                 </View>
               ) : isTerminated ? (
-                <View style={{ width: '100%', alignItems: 'center', gap: 8 }}>
-                  <WarningCircle size={24} color={colors.error} weight="fill" />
-                  <AppText size="xs" color={colors.error} variant="bold">Job Terminated</AppText>
+                <View style={{ width: '100%', alignItems: 'center', gap: 4 }}>
+                  <WarningCircle size={20} color={colors.error} weight="fill" />
                   <Ripple 
                     onPress={() => setShowAgreement(true)}
-                    style={{ padding: 4 }}
                   >
                     <AppText size="xs" color={colors.textSecondary} variant="bold">View Termination Records</AppText>
                   </Ripple>
@@ -450,7 +428,7 @@ export const ContractMessage = ({ message, isSender, onPay, onComplete, onCancel
                       onPress={() => router.push('/wallet')}
                       rippleColor={colors.primary}
                     >
-                        <Plus size={18} color={colors.primary} style={{ marginRight: 6 }} />
+                        <Plus size={16} color={colors.primary} style={{ marginRight: 6 }} />
                         <AppText color={colors.primary} variant="bold" size="xs">Top up ₦{(totalClientCostNaira - userBalanceNaira).toLocaleString()} to Pay</AppText>
                     </Ripple>
                   ) : (
@@ -460,38 +438,34 @@ export const ContractMessage = ({ message, isSender, onPay, onComplete, onCancel
                       disabled={!user?.isNinVerified}
                       rippleColor="#fff"
                     >
-                        <CreditCard size={18} color={user?.isNinVerified ? "#fff" : colors.textSecondary} style={{ marginRight: 6 }} />
+                        <CreditCard size={16} color={user?.isNinVerified ? "#fff" : colors.textSecondary} style={{ marginRight: 6 }} />
                         <AppText color={user?.isNinVerified ? "#fff" : colors.textSecondary} variant="bold" size="xs">
                           {user?.isNinVerified ? 'Proceed to Pay' : user?.ninStatus === 'PENDING' ? 'Verification Pending' : 'Verification Required'}
                         </AppText>
                     </Ripple>
                   )
               ) : (contract.status === 'PAID' || contract.status === 'IN_PROGRESS') ? (
-                  <View style={{ width: '100%', gap: 12 }}>
+                  <View style={{ width: '100%', gap: 8 }}>
                     <Ripple 
-                      style={[styles.actionBtn, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.primary, width: '100%' }]}
+                      style={[styles.actionBtn, { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.primary, width: '100%' }]}
                       onPress={() => setShowAgreement(true)}
                     >
-                        <FileText size={18} color={colors.primary} style={{ marginRight: 6 }} />
-                        <AppText color={colors.primary} variant="bold" size="xs">Read Full Agreement</AppText>
+                        <FileText size={16} color={colors.primary} style={{ marginRight: 6 }} />
+                        <AppText color={colors.primary} variant="bold" size="xs">Read Agreement</AppText>
                     </Ripple>
 
-                    <View style={[styles.divider, { backgroundColor: colors.border, height: 1.5, opacity: 0.5 }]} />
-
-                    <View style={{ alignItems: 'center', paddingVertical: 4 }}>
+                    <View style={{ alignItems: 'center' }}>
                       <AppText size="xs" color={colors.success} variant="bold">Escrow Active · Funds Secured</AppText>
-                      <AppText size="xs" color={colors.textSecondary} style={{ marginTop: 2 }}>Manage this job in the tracking screen</AppText>
                     </View>
                   </View>
               ) : contract.status === 'COMPLETED' ? (
-                  <View style={{ width: '100%', alignItems: 'center', gap: 8 }}>
-                    <CheckCircle size={24} color={colors.success} weight="fill" />
-                    <AppText size="xs" color={colors.success} variant="bold">Job Completed · Funds Released</AppText>
+                  <View style={{ width: '100%', alignItems: 'center', gap: 6 }}>
+                    <CheckCircle size={20} color={colors.success} weight="fill" />
+                    <AppText size="xs" color={colors.success} variant="bold">Job Completed</AppText>
                     <Ripple 
                       onPress={() => setShowAgreement(true)}
-                      style={{ padding: 4 }}
                     >
-                      <AppText size="xs" color={colors.primary} variant="bold">View Archived Agreement</AppText>
+                      <AppText size="xs" color={colors.primary} variant="bold">View Agreement</AppText>
                     </Ripple>
                   </View>
               ) : (
@@ -583,113 +557,90 @@ export const ContractMessage = ({ message, isSender, onPay, onComplete, onCancel
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 20,
-    borderWidth: 1,
+    borderWidth: 1.5,
     overflow: 'hidden',
-    width: '100%',
-    maxWidth: '100%',
-    marginVertical: 8,
-    alignSelf: 'stretch',
+    width: '85%',
+    maxWidth: 320,
+    marginVertical: 4,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderBottomWidth: 1,
   },
   iconWrapper: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },
   detailsBox: {
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 16,
+    padding: 10,
+    borderRadius: 8,
   },
   grid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
+    gap: 16,
   },
   gridItem: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 12,
-    borderTopWidth: 1,
-    marginTop: 4,
   },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
   },
   typeBadge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 12,
+    borderRadius: 8,
   },
   cancellationBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 12,
+    padding: 10,
+    borderRadius: 8,
     borderWidth: 1,
     borderStyle: 'dashed',
-    marginBottom: 16,
   },
   body: {
-    padding: 16,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  quoteRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  materialsList: {
     padding: 12,
-    borderRadius: 12,
-    marginVertical: 8,
   },
-  materialItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  totalRow: {
+  quoteMiniRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 12,
-    paddingTop: 12,
+  },
+  materialsListMini: {
+    padding: 8,
+    borderRadius: 8,
+  },
+  totalRowMini: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 8,
     borderTopWidth: 1,
+    marginTop: 4,
   },
   footer: {
-    flexDirection: 'row',
-    padding: 12,
+    padding: 10,
     borderTopWidth: 1,
-    gap: 12,
   },
   actionBtn: {
-    flex: 1,
-    height: 44,
-    borderRadius: 12,
+    height: 40,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
@@ -719,6 +670,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  quoteRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  materialsList: {
+    padding: 12,
+    borderRadius: 12,
+    marginVertical: 8,
+  },
+  materialItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
   },
   agreementActions: {
     paddingTop: 16,

@@ -16,9 +16,9 @@ import { contractService } from '@/services/contract.service';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useNotificationStore } from '@/store/useNotificationStore';
 import dayjs from 'dayjs';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { ArrowRight, Bell, CalendarBlank, CaretDown, CaretRight, CheckCircle, Clock, Eye, EyeSlash, Headset, MapPin, Receipt, ShieldWarning, Star, Wallet } from 'phosphor-react-native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import Ripple from 'react-native-material-ripple';
 
@@ -196,15 +196,28 @@ export default function HomeScreen() {
 
   const _hasHydrated = useAuthStore(state => state._hasHydrated);
   const accessToken = useAuthStore(state => state.accessToken);
+  const hasInitialLoaded = useRef(false);
 
   useEffect(() => {
     if (_hasHydrated && accessToken) {
-        Promise.all([fetchProfile(), fetchHomeData()]).finally(() => setLoading(false));
+        Promise.all([fetchProfile(), fetchHomeData()]).finally(() => {
+            setLoading(false);
+            hasInitialLoaded.current = true;
+        });
     } else if (_hasHydrated && !accessToken) {
         // Not logged in, stop loading state
         setLoading(false);
     }
   }, [_hasHydrated, accessToken]);
+
+  // Re-fetch home data when the tab regains focus (e.g., after releasing payment)
+  useFocusEffect(
+    useCallback(() => {
+      if (hasInitialLoaded.current && _hasHydrated && accessToken) {
+        fetchHomeData();
+      }
+    }, [_hasHydrated, accessToken])
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

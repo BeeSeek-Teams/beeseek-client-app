@@ -3,7 +3,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import NetInfo, { NetInfoStateType } from '@react-native-community/netinfo';
 import { Warning, WifiSlash } from 'phosphor-react-native';
 import React, { useEffect, useState } from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
+import { Animated, Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from './AppText';
 
@@ -56,7 +56,7 @@ export function OfflineBanner() {
 
     const translateY = animatedValue.interpolate({
         inputRange: [0, 1],
-        outputRange: [-100, 0],
+        outputRange: [100, 0],
     });
 
     if (!isVisible) return null;
@@ -70,7 +70,7 @@ export function OfflineBanner() {
             { 
                 backgroundColor: bgColor, 
                 transform: [{ translateY }],
-                paddingTop: insets.top > 0 ? insets.top : 10
+                bottom: 85 + (Platform.OS === 'ios' ? insets.bottom : 0),
             }
         ]}>
             <View style={styles.content}>
@@ -90,11 +90,10 @@ export function OfflineBanner() {
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
+        left: 20,
+        right: 20,
         zIndex: 9999,
-        paddingBottom: 10,
+        borderRadius: 12,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
@@ -105,6 +104,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
+        paddingVertical: 12,
         paddingHorizontal: 16,
     }
 });

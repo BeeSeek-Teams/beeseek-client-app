@@ -18,6 +18,7 @@ import { reviewService } from '@/services/review.service';
 import { useAuthStore } from '@/store/useAuthStore';
 import dayjs from 'dayjs';
 import * as Clipboard from 'expo-clipboard';
+import * as Crypto from 'expo-crypto';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Briefcase, ChatTeardropText, Check, Copy, Info, MagnifyingGlass, Phone, ShieldWarning } from 'phosphor-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -42,6 +43,7 @@ export default function JobDetailsScreen() {
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const [reviewModalVisible, setReviewModalVisible] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
+  const [completionIdempotencyKey, setCompletionIdempotencyKey] = useState<string | null>(null);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   
   // Alert Config
@@ -316,6 +318,8 @@ export default function JobDetailsScreen() {
           showCancel: true,
           onConfirm: async () => {
               setAlertConfig(prev => ({ ...prev, visible: false }));
+              // Generate idempotency key when user initiates release
+              setCompletionIdempotencyKey(Crypto.randomUUID());
               // Open PIN Modal
               setTimeout(() => setPinModalVisible(true), 100);
           }
@@ -327,8 +331,22 @@ export default function JobDetailsScreen() {
     setPinModalVisible(false);
     setIsCompleting(true);
 
+    // Use existing key or generate one (safety net)
+    const idemKey = completionIdempotencyKey || Crypto.randomUUID();
+    if (!completionIdempotencyKey) {
+      setCompletionIdempotencyKey(idemKey);
+    }
+
     try {
-        await contractService.complete(jobData.contract.id, pin);
+        await contractService.complete(jobData.contract.id, pin, idemKey);
+        // Clear idempotency key on success
+        setCompletionIdempotencyKey(null);
+        // Optimistically update local state so UI reflects completion immediately
+        setJobData((prev: any) => ({
+            ...prev,
+            status: 'COMPLETED',
+            completedAt: new Date().toISOString(),
+        }));
         showAlert({ 
             type: 'success', 
             title: 'Payment Released', 
@@ -338,8 +356,9 @@ export default function JobDetailsScreen() {
                 setTimeout(() => setReviewModalVisible(true), 500);
             }
         });
-        fetchJob(); // Refresh UI
+        fetchJob(); // Background refresh for full server state
     } catch (e: any) {
+        // Keep completionIdempotencyKey so retry uses the same key
         showAlert({ 
             type: 'error', 
             title: 'Error', 

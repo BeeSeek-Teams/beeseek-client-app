@@ -75,13 +75,13 @@ export const contractService = {
     return response.data;
   },
 
-  pay: async (id: string, roomId: string, pin: string) => {
-    const response = await api.post(`/contracts/${id}/pay`, { roomId, pin });
+  pay: async (id: string, roomId: string, pin: string, idempotencyKey: string) => {
+    const response = await api.post(`/contracts/${id}/pay`, { roomId, pin, idempotencyKey });
     return response.data;
   },
 
-  complete: async (id: string, pin: string) => {
-    const response = await api.post(`/contracts/${id}/complete`, { pin });
+  complete: async (id: string, pin: string, idempotencyKey: string) => {
+    const response = await api.post(`/contracts/${id}/complete`, { pin, idempotencyKey });
     return response.data;
   },
 
