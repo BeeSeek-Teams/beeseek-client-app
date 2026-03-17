@@ -371,27 +371,29 @@ export default function HomeScreen() {
                 {(!user?.isNinVerified) && (
                   <Ripple
                     style={{
-                      backgroundColor: colors.warning + '15',
+                      backgroundColor: user?.ninStatus === 'PENDING' ? colors.info + '15' : colors.warning + '15',
                       padding: Spacing.md,
                       borderRadius: 12,
                       marginBottom: Spacing.lg,
                       borderWidth: 1,
-                      borderColor: colors.warning,
+                      borderColor: user?.ninStatus === 'PENDING' ? colors.info : colors.warning,
                       flexDirection: 'row',
                       alignItems: 'center',
                     }} // @ts-ignore
-                    onPress={() => router.push('/verify-nin')}
+                    onPress={() => user?.ninStatus !== 'PENDING' && router.push('/verify-nin')}
                   >
-                    <ShieldWarning size={24} color={colors.warning} weight="fill" />
+                    <ShieldWarning size={24} color={user?.ninStatus === 'PENDING' ? colors.info : colors.warning} weight="fill" />
                     <View style={{ marginLeft: 12, flex: 1 }}>
-                      <AppText variant="bold" size="md" color={colors.warning}>
-                        Verify Account
+                      <AppText variant="bold" size="md" color={user?.ninStatus === 'PENDING' ? colors.info : colors.warning}>
+                        {user?.ninStatus === 'PENDING' ? 'Verification Pending' : 'Verify Account'}
                       </AppText>
                       <AppText size="xs" color={colors.textSecondary} style={{ marginTop: 2 }}>
-                        Complete your verification to get verified badge.
+                        {user?.ninStatus === 'PENDING' 
+                          ? 'Your NIN is under review. Support will confirm within 24 hours.' 
+                          : 'Complete your NIN verification to unlock features.'}
                       </AppText>
                     </View>
-                    <CaretRight size={16} color={colors.warning} />
+                    {user?.ninStatus !== 'PENDING' && <CaretRight size={16} color={colors.warning} />}
                   </Ripple>
                 )}
 
