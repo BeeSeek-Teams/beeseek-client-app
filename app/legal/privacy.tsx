@@ -20,7 +20,7 @@ export default function PrivacyPolicyScreen() {
       
       <View style={{ flex: 1 }}>
         <WebView
-          source={{ uri: 'https://www.beseek.site/privacy-policy' }}
+          source={{ uri: 'https://legal.beeseek.site/privacy' }}
           style={{ flex: 1, backgroundColor: colors.background }}
           onLoadStart={() => setIsLoading(true)}
           onLoadEnd={() => setIsLoading(false)}

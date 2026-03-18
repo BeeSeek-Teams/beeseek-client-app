@@ -20,7 +20,7 @@ export default function TermsOfServiceScreen() {
       
       <View style={{ flex: 1 }}>
         <WebView
-          source={{ uri: 'https://www.beseek.site/terms' }}
+          source={{ uri: 'https://legal.beeseek.site/terms' }}
           style={{ flex: 1, backgroundColor: colors.background }}
           onLoadStart={() => setIsLoading(true)}
           onLoadEnd={() => setIsLoading(false)}

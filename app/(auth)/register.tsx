@@ -218,6 +218,16 @@ export default function RegisterScreen() {
                 )}
               />
 
+              <AppText size="xs" color={colors.textSecondary} style={{ marginTop: Spacing.sm, lineHeight: 18 }}>
+                By creating an account, you agree to our{' '}
+                <AppText size="xs" color={colors.primary} onPress={() => router.push('/legal/terms')}>
+                  Terms of Service
+                </AppText>{' '}and{' '}
+                <AppText size="xs" color={colors.primary} onPress={() => router.push('/legal/privacy')}>
+                  Privacy Policy
+                </AppText>.
+              </AppText>
+
               <AppButton
                 title="Create Account"
                 onPress={handleSubmit(onSubmit)}

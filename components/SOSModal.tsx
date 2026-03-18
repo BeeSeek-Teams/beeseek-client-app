@@ -108,8 +108,12 @@ export function SOSModal({ visible, onClose }: SOSModalProps) {
             title="Emergency Assistance"
         >
             <View>
-                <AppText color={colors.textSecondary} size="sm" style={{ marginBottom: Spacing.lg }}>
+                <AppText color={colors.textSecondary} size="sm" style={{ marginBottom: Spacing.sm }}>
                     Tap a number to call immediately or alert your emergency contact.
+                </AppText>
+
+                <AppText size="xs" color={colors.textSecondary} style={{ marginBottom: Spacing.lg, fontStyle: 'italic' }}>
+                    Disclaimer: This feature is not a substitute for calling emergency services directly. If you are in immediate danger, please dial 112 or your local emergency number. BeeSeek does not guarantee response times from third-party services.
                 </AppText>
 
                 <AppText variant="bold" size="sm" style={{ marginBottom: Spacing.md }}>

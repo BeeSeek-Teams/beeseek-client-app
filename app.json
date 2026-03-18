@@ -144,6 +144,8 @@
       "typedRoutes": true,
       "reactCompiler": true
     },
+    "privacyPolicyUrl": "https://legal.beeseek.site/privacy",
+    "termsOfServiceUrl": "https://legal.beeseek.site/terms",
     "runtimeVersion": {
       "policy": "appVersion"
     },
