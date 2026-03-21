@@ -131,8 +131,7 @@
         {
           "faceIDPermission": "BeeSeek uses Face ID to secure your transaction PIN and account access."
         }
-      ],
-      "@sentry/react-native"
+      ]
     ],
     "extra": {
       "eas": {

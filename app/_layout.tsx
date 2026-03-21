@@ -1,6 +1,5 @@
 import { PlusJakartaSans_400Regular, PlusJakartaSans_500Medium, PlusJakartaSans_600SemiBold, PlusJakartaSans_700Bold, useFonts } from '@expo-google-fonts/plus-jakarta-sans';
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import * as Sentry from '@sentry/react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -11,7 +10,6 @@ import 'react-native-reanimated';
 import { AppAlert } from '@/components/AppAlert';
 import { AppUpdateModal } from '@/components/AppUpdateModal';
 import { OfflineBanner } from '@/components/OfflineBanner';
-import { Config } from '@/config';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useNotifications } from '@/hooks/use-notifications';
 import { usePresence } from '@/hooks/use-presence';
@@ -23,14 +21,6 @@ import { useErrorStore } from '@/store/useErrorStore';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
-
-if (Config.SENTRY_DSN) {
-  Sentry.init({
-    dsn: Config.SENTRY_DSN,
-    debug: process.env.NODE_ENV === 'development',
-    tracesSampleRate: 1.0,
-  });
-}
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
@@ -168,4 +158,4 @@ function RootLayout() {
   return <RootLayoutNav />;
 }
 
-export default Sentry.wrap(RootLayout);
+export default RootLayout;
