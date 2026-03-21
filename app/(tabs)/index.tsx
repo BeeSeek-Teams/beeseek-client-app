@@ -16,6 +16,7 @@ import { chatService } from '@/services/chat.service';
 import { contractService } from '@/services/contract.service';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useNotificationStore } from '@/store/useNotificationStore';
+import { formatNairaCompact } from '@/utils/format';
 import dayjs from 'dayjs';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { ArrowRight, Bell, CalendarBlank, CaretDown, CaretRight, CheckCircle, Clock, Eye, EyeSlash, Headset, MapPin, Receipt, ShieldWarning, Star, Wallet } from 'phosphor-react-native';
@@ -430,7 +431,7 @@ export default function HomeScreen() {
                     <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
                     <StatItem 
                         icon={Wallet} 
-                        value={`₦${((stats?.totalSpent || 0) / 100).toLocaleString()}`} 
+                        value={formatNairaCompact(stats?.totalSpent || 0)} 
                         label="Spent" 
                         isPrivate
                         isHidden={!showSpent}
