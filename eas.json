@@ -17,7 +17,9 @@
       "channel": "production",
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.beeseek.site"
+        "EXPO_PUBLIC_API_URL": "https://api.beeseek.site",
+        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyC5IFMAUyuksMAoaxZP2xanpd2bg-Fx8fY",
+        "EXPO_PUBLIC_GOOGLE_PLACES_API_KEY": "AIzaSyC5IFMAUyuksMAoaxZP2xanpd2bg-Fx8fY"
       }
     }
   },
